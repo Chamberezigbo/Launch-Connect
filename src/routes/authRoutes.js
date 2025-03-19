@@ -4,6 +4,7 @@ const {
   signupUser,
   loginUser,
   googlAuth,
+  testendpoint,
 } = require("../controllers/authController");
 const { validateSignup, validateLogin } = require("../middlewares/validator");
 const passport = require("../config/passport");
@@ -12,6 +13,7 @@ const router = express.Router();
 
 router.post("/signup", validateSignup, signupUser);
 router.post("/login", validateLogin, loginUser);
+router.get("/test", testendpoint);
 
 // Google OAuth for Job Seekers
 router.get(

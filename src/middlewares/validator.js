@@ -16,7 +16,7 @@ exports.validateSignup = [
   body("role")
     .notEmpty()
     .withMessage("Role is required")
-    .isIn(["JOB_SEEKER", "COMPANY"])
+    .isIn(["job_seeker", "company"])
     .withMessage("Role must be either JOB_SEEKER or COMPANY"),
   (req, res, next) => {
     const errors = validationResult(req);

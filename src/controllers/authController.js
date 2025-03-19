@@ -1,13 +1,13 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { PrismaClint } = require("prisma");
+const { PrismaClient } = require("@prisma/client");
 
-const prisma = new PrismaClint();
-const SECRET_KEY = process.env.JWT_SECRET;
+const prisma = new PrismaClient();
+const JWT_SECRET = process.env.JWT_SECRET;
 
 exports.signupUser = async (req, res, next) => {
   try {
-    const { email, fullName, password } = req.body;
+    const { email, fullName, password, role } = req.body;
 
     // check if user email exist//
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -23,7 +23,7 @@ exports.signupUser = async (req, res, next) => {
 
     // Create user//
     const user = await prisma.user.create({
-      data: { email, fullname, role, password: hashedPassword },
+      data: { email, fullName, role, passwordHash: hashedPassword },
     });
 
     // Generate JWT
@@ -60,7 +60,7 @@ exports.loginUser = async (req, res, next) => {
     }
 
     // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
       return res.status(401).json({ error: "Invalid credentials" });
     }

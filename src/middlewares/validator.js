@@ -39,3 +39,33 @@ exports.validateLogin = [
     next();
   },
 ];
+
+// validation rule for forgoten password//
+exports.validateForgotPass = [
+  body("email").isEmail().withMessage("Invalid email address"),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+    next();
+  },
+];
+
+// validation rule for password reset//
+exports.validatepasswordReset = [
+  body("newPassword")
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters")
+    .matches(/\d/)
+    .withMessage("Password must contain a number"),
+
+  body("token").notEmpty().withMessage("Please enter your full name"),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+    next();
+  },
+];

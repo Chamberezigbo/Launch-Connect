@@ -19,6 +19,8 @@ model User {
   email          String   @unique
   passwordHash   String?
   role           Role
+  resetToken        String?  // Stores reset token
+  resetTokenExpiry  DateTime?  // Token expiration time
   createdAt      DateTime @default(now())
 
   jobSeeker      JobSeeker?

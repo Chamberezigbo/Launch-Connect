@@ -5,39 +5,35 @@ const {
   loginUser,
   googlAuth,
   testendpoint,
+  verifyEmail,
+  resendOtp,
 } = require("../controllers/authController");
-const { validateSignup, validateLogin } = require("../middlewares/validator");
+const {
+  validateSignup,
+  validateLogin,
+  validateEmail,
+  validateResendOtp,
+} = require("../middlewares/validator");
 const passport = require("../config/passport");
 
 const router = express.Router();
 
 router.post("/signup", validateSignup, signupUser);
+router.post("/email-verify", validateEmail, verifyEmail);
+router.post("/resend-otp", validateResendOtp, resendOtp);
 router.post("/login", validateLogin, loginUser);
 router.get("/test", testendpoint);
 
-// Google OAuth for Job Seekers
-router.get(
-  "/google/job-seeker",
-  passport.authenticate("google-job-seeker", { scope: ["profile", "email"] })
-);
-
-// Google OAuth Callback for Job Seekers
-router.get(
-  "/google/job-seeker/callback",
-  passport.authenticate("google-job-seeker", { session: false }),
-  googlAuth
-);
-
 // Google OAuth for Companies
 router.get(
-  "/google/company",
-  passport.authenticate("google-company", { scope: ["profile", "email"] })
+  "/google/signup",
+  passport.authenticate({ scope: ["profile", "email"] })
 );
 
 // Google OAuth Callback for Companies
 router.get(
-  "/google/company/callback",
-  passport.authenticate("google-company", { session: false }),
+  "/google/callback",
+  passport.authenticate({ session: false }),
   googlAuth
 );
 

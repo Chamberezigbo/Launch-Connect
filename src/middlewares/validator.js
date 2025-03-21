@@ -50,7 +50,7 @@ exports.validatepasswordReset = [
     .matches(/\d/)
     .withMessage("Password must contain a number"),
 
-  body("token").notEmpty().withMessage("Please enter your full name"),
+  body("tempToken").notEmpty().withMessage("Please enter your full name"),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -104,6 +104,17 @@ exports.validateEmail = [
 
 exports.validateResendOtp = [
   body("email").isEmail().withMessage("Invalid email address"),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+    next();
+  },
+];
+
+exports.validateOtp = [
+  body("otp").isLength({ min: 4 }).withMessage("otp must be at 4 characters"),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

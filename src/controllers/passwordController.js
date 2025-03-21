@@ -5,6 +5,8 @@ const bcrypt = require("bcryptjs");
 const { sendEmail } = require("../service/emailTrasporter");
 const resetPasswordTemplate = require("../templates/resetPasswordTemplate");
 const { send } = require("process");
+const generateOtp = require("../utils/generateOtp");
+const exp = require("constants");
 
 const prisma = new PrismaClient();
 const FRONTEND_URL = process.env.FRONTEND_URL;
@@ -18,17 +20,16 @@ exports.forgotPassword = async (req, res, next) => {
     if (!user) return res.status(404).json({ error: "User not found" });
 
     // Generate reset token
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 min expiry
+    const { otp, expiry } = generateOtp(); // Default 15 min expiry
 
     // Save user token to expire
     await prisma.user.update({
       where: { email },
-      data: { resetToken, resetTokenExpiry },
+      data: { resetToken: otp, resetTokenExpiry: expiry },
     });
 
     // Generate reset link//
-    const resetLink = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
+    const resetLink = `${FRONTEND_URL}/reset-password?token=${otp}`;
 
     //  Send reset password email//
     const emailMessage = "Resest Your Password";
@@ -36,7 +37,7 @@ exports.forgotPassword = async (req, res, next) => {
       user.email,
       resetLink,
       emailMessage,
-      resetTokenExpiry
+      expiry
     );
     await sendEmail(user.email, emailMessage, emailHTML);
 

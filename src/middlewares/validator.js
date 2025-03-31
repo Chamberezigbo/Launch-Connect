@@ -123,3 +123,40 @@ exports.validateOtp = [
     next();
   },
 ];
+
+exports.validateProfileInput = [
+  body("role").notEmpty().withMessage("Role is required"),
+  body("fullName").notEmpty().withMessage("Full name is required"),
+  body("roleInCompany")
+    .optional()
+    .notEmpty()
+    .withMessage("Company name is required for companies"),
+  body("shortBio")
+    .optional()
+    .isLength({ max: 300 })
+    .withMessage("Short bio should not exceed 300 characters"),
+  body("skills")
+    .optional()
+    .isArray()
+    .withMessage("Skills should be an array of strings"),
+  body("interests")
+    .optional()
+    .isArray()
+    .withMessage("Interests should be an array of strings"),
+  body("companyName")
+    .optional()
+    .notEmpty()
+    .withMessage("Company name is required for companies"),
+  body("industry")
+    .optional()
+    .notEmpty()
+    .withMessage("Industry is required for companies"),
+  body("website").optional().isURL().withMessage("Invalid website URL"),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+    next();
+  },
+];

@@ -5,6 +5,8 @@ const { PrismaClient } = require("@prisma/client");
 
 const authRoutes = require("./src/routes/authRoutes");
 const passwordRoutes = require("./src/routes/passwordRoutes");
+const userRoutes = require("./src/routes/userRoutes");
+const profileRoutes = require("./src/routes/profileRoutes");
 
 const app = express();
 const prisma = new PrismaClient();
@@ -15,6 +17,8 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/password", passwordRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/profile", profileRoutes);
 
 // Function to start the server after DB connection
 async function startServer() {

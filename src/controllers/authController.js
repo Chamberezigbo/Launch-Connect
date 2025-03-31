@@ -197,6 +197,16 @@ exports.loginUser = async (req, res, next) => {
       expiresIn: "7d",
     });
 
+    // Check if role is set
+    if (!user.role) {
+      return res.status(400).json({
+        success: false,
+        message: "Role not set. Please select a role to continue.",
+        redirectTo: "/select-role", // Frontend should navigate user here
+        token,
+      });
+    }
+
     res
       .status(200)
       .json({ message: "Login successful", token, redirectTo: "/dashboard" });

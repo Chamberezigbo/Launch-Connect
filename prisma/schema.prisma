@@ -32,6 +32,9 @@ model JobSeeker {
   user          User     @relation(fields: [id], references: [id])
   resumeUrl     String?
   skills        String[]
+  interests     String[]
+  fullName      String
+  shortBio      String
 
   applications  JobApplication[]
 }
@@ -39,10 +42,11 @@ model JobSeeker {
 model Company {
   id          String   @id @default(uuid()) @map("id") @unique
   user        User     @relation(fields: [id], references: [id])
-  name        String
-  logoUrl     String?
+  fullName    String
+  companyName String
   industry    String?
   website     String?
+  roleInCompany String
 
   jobs        Job[]
 }

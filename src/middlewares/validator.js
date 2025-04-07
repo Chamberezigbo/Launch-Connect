@@ -45,7 +45,7 @@ exports.validateForgotPass = [
 // validation rule for password reset//
 exports.validatepasswordReset = [
   body("newPassword")
-    .isLength({ min: 6 })
+    .isLength({ min: 8 })
     .withMessage("Password must be at least 6 characters")
     .matches(/\d/)
     .withMessage("Password must contain a number"),
@@ -130,19 +130,34 @@ exports.validateProfileInput = [
   body("roleInCompany")
     .optional()
     .notEmpty()
-    .withMessage("Company name is required for companies"),
+    .withMessage("Role name is required"),
   body("shortBio")
     .optional()
     .isLength({ max: 300 })
-    .withMessage("Short bio should not exceed 300 characters"),
+    .withMessage("Short is required and should not exceed 300 characters"),
+
   body("skills")
     .optional()
-    .isArray()
-    .withMessage("Skills should be an array of strings"),
+    .custom((value) => {
+      if (Array.isArray(value)) return true;
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) return true;
+      } catch (err) {}
+      throw new Error("Skills should be an array of strings");
+    }),
+
   body("interests")
     .optional()
-    .isArray()
-    .withMessage("Interests should be an array of strings"),
+    .custom((value) => {
+      if (Array.isArray(value)) return true;
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) return true;
+      } catch (err) {}
+      throw new Error("Interests should be an array of strings");
+    }),
+
   body("companyName")
     .optional()
     .notEmpty()
@@ -152,6 +167,7 @@ exports.validateProfileInput = [
     .notEmpty()
     .withMessage("Industry is required for companies"),
   body("website").optional().isURL().withMessage("Invalid website URL"),
+
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

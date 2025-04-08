@@ -47,6 +47,7 @@ model Company {
   industry    String?
   website     String?
   roleInCompany String
+  companyLogo String?
 
   jobs        Job[]
 }
@@ -78,7 +79,7 @@ model JobApplication {
 
 enum Role {
   job_seeker
-  company
+  startupFounder
 }
 
 enum JobType {

@@ -79,8 +79,8 @@ exports.validateRole = [
   body("role")
     .notEmpty()
     .withMessage("Role is required")
-    .isIn(["job_seeker", "company"])
-    .withMessage("Role must be either JOB_SEEKER or COMPANY"),
+    .isIn(["job_seeker", "startupFounder"])
+    .withMessage("Role must be either JOB_SEEKER or Startup founder"),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

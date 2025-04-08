@@ -176,3 +176,31 @@ exports.validateProfileInput = [
     next();
   },
 ];
+
+exports.validateJob = [
+  body("title").notEmpty().withMessage("Job title is required"),
+  body("description").notEmpty().withMessage("Description is required"),
+  body("responsibilities")
+    .notEmpty()
+    .withMessage("Responsibilities are required"),
+  body("skillsRequired").notEmpty().withMessage("Skills required is required"),
+  body("industry").notEmpty().withMessage("Industry is required"),
+  body("commitmenLevel").notEmpty().withMessage("Commitment level is required"),
+  body("jobType")
+    .isIn(["FULL_TIME", "PART_TIME", "CONTRACT", "INTERNSHIP", "REMOTE"]) // Adjust based on your enum
+    .withMessage("Invalid job type"),
+  body("paidRole")
+    .isIn(["PAID", "UNPAID"]) // Adjust based on your enum
+    .withMessage("Invalid paid role type"),
+  body("deadline")
+    .isISO8601()
+    .toDate()
+    .withMessage("Deadline must be a valid date"),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+    next();
+  },
+];

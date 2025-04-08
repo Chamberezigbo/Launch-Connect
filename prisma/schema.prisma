@@ -53,19 +53,24 @@ model Company {
 }
 
 model Job {
-  id             String   @id @default(uuid())
-  companyId      String
-  company        Company  @relation(fields: [companyId], references: [id])
-  title          String
-  description    String
-  skillsRequired String[]
-  location       String?
-  salary        Int?
-  jobType        JobType
-  createdAt      DateTime @default(now())
+  id               String     @id @default(uuid())
+  companyId        String
+  company          Company    @relation(fields: [companyId], references: [id])
+  title            String
+  description      String
+  responsibilities String
+  skillsRequired   String
+  industry         String
+  paidRole         PaidRole
+  deadline         DateTime
+  commitmenLevel   String
+  location         String?
+  jobType          JobType
+  createdAt        DateTime   @default(now())
 
-  applications   JobApplication[]
+  applications     JobApplication[]
 }
+
 
 model JobApplication {
   id          String   @id @default(uuid())
@@ -82,11 +87,17 @@ enum Role {
   startupFounder
 }
 
+enum PaidRole{
+  UNPAID
+  PAID
+}
+
 enum JobType {
-  full_time
-  part_time
-  contract
-  remote
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  REMOTE
+  INTERNSHIP
 }
 
 enum ApplicationStatus {

@@ -1,4 +1,4 @@
-const { body, validationResult } = require("express-validator");
+const { body, validationResult, query } = require("express-validator");
 
 // Valaidation for signup//
 exports.validateSignup = [
@@ -196,6 +196,60 @@ exports.validateJob = [
     .isISO8601()
     .toDate()
     .withMessage("Deadline must be a valid date"),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+    next();
+  },
+];
+
+exports.validateGetApplications = [
+  query("status")
+    .optional()
+    .isIn(["PENDING", "ACCEPTED", "REJECTED"])
+    .withMessage("Invalid status value"),
+
+  query("industry")
+    .optional()
+    .isString()
+    .trim()
+    .withMessage("Industry must be a string"),
+
+  query("jobType")
+    .optional()
+    .isIn(["FULL_TIME", "PART_TIME", "INTERNSHIP", "REMOTE", "CONTRACT"]) // adjust to match your enum
+    .withMessage("Invalid job type"),
+
+  query("page")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("Page must be a positive integer"),
+
+  query("limit")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("Limit must be a positive integer"),
+
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+    next();
+  },
+];
+
+exports.validateGetJobApplicationsForCompany = [
+  query("page")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("Page must be a positive integer"),
+  query("limit")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("Limit must be a positive integer"),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

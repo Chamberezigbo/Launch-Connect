@@ -73,13 +73,13 @@ model Job {
 
 
 model JobApplication {
-  id          String   @id @default(uuid())
+  id          String            @id @default(uuid())
   jobId       String
-  job         Job      @relation(fields: [jobId], references: [id])
+  job         Job               @relation(fields: [jobId], references: [id])
   jobSeekerId String
-  jobSeeker   JobSeeker @relation(fields: [jobSeekerId], references: [id])
-  status      ApplicationStatus
-  appliedAt   DateTime @default(now())
+  jobSeeker   JobSeeker         @relation(fields: [jobSeekerId], references: [id])
+  status      ApplicationStatus @default(PENDING)
+  appliedAt   DateTime          @default(now())
 }
 
 enum Role {
@@ -101,9 +101,7 @@ enum JobType {
 }
 
 enum ApplicationStatus {
-  applied
-  shortlisted
-  interview
-  hired
-  rejected
+  PENDING
+  ACCEPTED
+  REJECTED
 }

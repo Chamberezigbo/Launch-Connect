@@ -17,6 +17,15 @@ exports.postJob = async (req, res, next) => {
     } = req.body;
 
     const companyId = req.user.id; // Assuming user is authenticated and is a company
+
+    //check if compny exist//
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+    });
+    if (!company) {
+      return res.status(404).json({ message: "Company not found" });
+    }
+
     const newJob = await prisma.job.create({
       data: {
         title,

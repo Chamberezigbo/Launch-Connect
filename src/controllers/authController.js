@@ -207,9 +207,28 @@ exports.loginUser = async (req, res, next) => {
       });
     }
 
-    res
-      .status(200)
-      .json({ message: "Login successful", token, redirectTo: "/dashboard" });
+    // Remove sensitive info
+    const { passwordHash, resetToken, resetTokenExpiry, ...safeUser } = user;
+
+    // Fetch relational data
+    let profile = null;
+    if (user.role === "job_seeker") {
+      profile = await prisma.jobSeeker.findUnique({
+        where: { id: user.id },
+      });
+    } else if (user.role === "startupFounder") {
+      profile = await prisma.company.findUnique({
+        where: { id: user.id },
+      });
+    }
+
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      redirectTo: "/dashboard",
+      user: safeUser,
+      profile, // either jobSeeker or company details
+    });
   } catch (error) {
     next(error);
   }

@@ -91,7 +91,7 @@ exports.validateRole = [
 ];
 
 exports.validateEmail = [
-  body("otp").isLength({ min: 4 }).withMessage("otp must be at 4 characters"),
+  body("otp").isLength({ min: 6 }).withMessage("otp must be at 6 characters"),
   body("email").isEmail().withMessage("Invalid email address"),
   (req, res, next) => {
     const errors = validationResult(req);

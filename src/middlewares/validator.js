@@ -4,8 +4,8 @@ const { body, validationResult, query } = require("express-validator");
 exports.validateSignup = [
   body("email").isEmail().withMessage("Please enter a valid email"),
   body("password")
-    .isLength({ min: 6 })
-    .withMessage("Password must be at least 6 characters")
+    .isLength({ min: 8 })
+    .withMessage("Password must be at least 8 characters")
     .matches(/\d/)
     .withMessage("Password must contain a number"),
   (req, res, next) => {
@@ -91,7 +91,7 @@ exports.validateRole = [
 ];
 
 exports.validateEmail = [
-  body("otp").isLength({ min: 6 }).withMessage("otp must be at 6 characters"),
+  body("otp").isLength({ min: 4 }).withMessage("otp must be at 4 characters"),
   body("email").isEmail().withMessage("Invalid email address"),
   (req, res, next) => {
     const errors = validationResult(req);

@@ -5,6 +5,8 @@ const {
   getAllCompanyJobs,
   getCompanyDashboardSummary,
   getJobSeekerStats,
+  deleteJobByIdForCompany,
+  getAllJobs,
 } = require("../controllers/jobController");
 const { authenticateUser } = require("../middlewares/authMiddleware");
 
@@ -18,7 +20,10 @@ router.get(
   getCompanyDashboardSummary
 );
 
+router.delete("/delete-job/:id", authenticateUser, deleteJobByIdForCompany);
+
 //jobseeker//
 router.get("/get-job-seeker-summary", authenticateUser, getJobSeekerStats);
+router.get("/get-random-jobs", getAllJobs);
 
 module.exports = router;

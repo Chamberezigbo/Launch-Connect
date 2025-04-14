@@ -6,6 +6,8 @@ const {
   getAllJobApplicationsForCompany,
   updateApplicationStatus,
   getJobsForJobSeeker,
+  getJobWithApplicants,
+  getJobByIdForJobSeeker,
 } = require("../controllers/applicationController");
 const { authenticateUser } = require("../middlewares/authMiddleware");
 
@@ -24,9 +26,10 @@ router.post(
   getJobApplicationsByJobSeeker
 );
 router.get("/job-for-you", authenticateUser, getJobsForJobSeeker);
+router.get("/singlejob/:id", authenticateUser, getJobByIdForJobSeeker);
 
 // company section//
-router.post(
+router.get(
   "/applications/all-application-startupfounders",
   authenticateUser,
   validateGetJobApplicationsForCompany,
@@ -38,5 +41,7 @@ router.put(
   authenticateUser,
   updateApplicationStatus
 );
+
+router.get("/single-job/:jobid", authenticateUser, getJobWithApplicants);
 
 module.exports = router;

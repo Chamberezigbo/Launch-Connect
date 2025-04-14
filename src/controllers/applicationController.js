@@ -52,7 +52,14 @@ exports.applyForJob = async (req, res, next) => {
 exports.getJobApplicationsByJobSeeker = async (req, res, next) => {
   try {
     const jobSeekerId = req.user.id;
-    const { status, industry, jobType, page = 1, limit = 10 } = req.query;
+    const {
+      status,
+      industry,
+      title,
+      jobType,
+      page = 1,
+      limit = 10,
+    } = req.query;
 
     const skip = (page - 1) * limit;
     const take = parseInt(limit);
@@ -75,6 +82,12 @@ exports.getJobApplicationsByJobSeeker = async (req, res, next) => {
       job: {
         ...(industry && { industry }),
         ...(jobType && { jobType }),
+        ...(title && {
+          title: {
+            contains: title,
+            mode: "insensitive", // for case-insensitive search
+          },
+        }),
       },
     };
 
@@ -184,6 +197,48 @@ exports.getJobsForJobSeeker = async (req, res, next) => {
   }
 };
 
+exports.getJobByIdForJobSeeker = async (req, res, next) => {
+  try {
+    const jobId = req.params.id;
+    const jobSeekerId = req.user.id; // assuming the logged-in user is a job seeker
+
+    // Check if job seeker exists
+    const jobSeeker = await prisma.jobSeeker.findUnique({
+      where: { id: jobSeekerId },
+    });
+
+    if (!jobSeeker) {
+      return res.status(403).json({
+        message:
+          "You need to complete your job seeker profile to view this job.",
+      });
+    }
+
+    // Fetch the job by ID including company info
+    const job = await prisma.job.findUnique({
+      where: { id: jobId },
+      include: {
+        company: {
+          select: {
+            companyName: true,
+            industry: true,
+            website: true,
+            companyLogo: true,
+          },
+        },
+      },
+    });
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    res.status(200).json({ job });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Startup/Company Section //
 exports.getAllJobApplicationsForCompany = async (req, res, next) => {
   try {
@@ -193,51 +248,70 @@ exports.getAllJobApplicationsForCompany = async (req, res, next) => {
 
     const skip = (page - 1) * pageSize;
 
-    // Get all applications related to this company's jobs
-    const [applications, total] = await Promise.all([
-      prisma.jobApplication.findMany({
-        where: {
-          job: {
-            companyId: companyId,
-          },
-        },
-        include: {
-          job: true,
-          jobSeeker: {
-            select: {
-              id: true,
-              fullName: true,
-              shortBio: true,
-              resumeUrl: true,
-              skills: true,
-              interests: true,
+    // Get all applications related to this company's jobs (paginated)
+    const [applications, totalApplications, jobsWithApplicantCounts] =
+      await Promise.all([
+        prisma.jobApplication.findMany({
+          where: {
+            job: {
+              companyId: companyId,
             },
           },
-        },
-        orderBy: {
-          appliedAt: "desc", // Most recently applied first
-        },
-        skip,
-        take: pageSize,
-      }),
-
-      prisma.jobApplication.count({
-        where: {
-          job: {
-            companyId: companyId,
+          include: {
+            job: true,
+            jobSeeker: {
+              select: {
+                id: true,
+                fullName: true,
+                shortBio: true,
+                resumeUrl: true,
+                skills: true,
+                interests: true,
+              },
+            },
           },
-        },
-      }),
-    ]);
+          orderBy: {
+            appliedAt: "desc", // Most recently applied first
+          },
+          skip,
+          take: pageSize,
+        }),
 
-    const totalPages = Math.ceil(total / pageSize);
+        // Total applications across all jobs
+        prisma.jobApplication.count({
+          where: {
+            job: {
+              companyId: companyId,
+            },
+          },
+        }),
+
+        // Job-wise applicant count
+        prisma.job.findMany({
+          where: { companyId },
+          select: {
+            id: true,
+            title: true,
+            _count: {
+              select: { applications: true },
+            },
+          },
+        }),
+      ]);
+
+    const totalPages = Math.ceil(totalApplications / pageSize);
 
     res.status(200).json({
-      total,
+      totalApplications,
       page,
       pageSize,
       totalPages,
       applications,
+      applicantCountPerJob: jobsWithApplicantCounts.map((job) => ({
+        jobId: job.id,
+        title: job.title,
+        applicantCount: job._count.applications,
+      })),
       ...(applications.length === 0 && { message: "No applications yet" }),
     });
   } catch (error) {
@@ -284,6 +358,42 @@ exports.updateApplicationStatus = async (req, res, next) => {
     res.status(200).json({
       message: "Application status updated successfully",
       updatedStatus: updated.status,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getJobWithApplicants = async (req, res, next) => {
+  try {
+    const companyId = req.user.id; // assuming user.id is from the authenticated company
+    const { jobId } = req.params;
+
+    // Check if the job belongs to this company
+    const job = await prisma.job.findFirst({
+      where: {
+        id: jobId,
+        companyId: companyId,
+      },
+      include: {
+        applications: {
+          include: {
+            jobSeeker: true, // include job seeker info for each application
+          },
+        },
+      },
+    });
+
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: "Job not found or does not belong to this company.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      job,
     });
   } catch (error) {
     next(error);

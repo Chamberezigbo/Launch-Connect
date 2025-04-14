@@ -165,3 +165,80 @@ exports.getCompanyDashboardSummary = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getAllJobs = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
+    const skip = (page - 1) * pageSize;
+
+    const [jobs, total] = await Promise.all([
+      prisma.job.findMany({
+        skip,
+        take: pageSize,
+        orderBy: { createdAt: "desc" },
+        include: {
+          company: {
+            select: {
+              companyName: true,
+              industry: true,
+              companyLogo: true,
+              website: true,
+            },
+          },
+        },
+      }),
+
+      prisma.job.count(),
+    ]);
+
+    const totalPages = Math.ceil(total / pageSize);
+
+    res.status(200).json({
+      total,
+      page,
+      pageSize,
+      totalPages,
+      jobs,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.deleteJobByIdForCompany = async (req, res, next) => {
+  try {
+    const companyId = req.user.id; // assuming this is the logged-in company user
+    const jobId = req.params.id;
+
+    // Check if the job exists and belongs to the authenticated company
+    const job = await prisma.job.findFirst({
+      where: {
+        id: jobId,
+        companyId: companyId,
+      },
+    });
+
+    if (!job) {
+      return res
+        .status(404)
+        .json({ message: "Job not found or not authorized" });
+    }
+
+    // Delete all job applications associated with the job
+    await prisma.jobApplication.deleteMany({
+      where: { jobId: jobId },
+    });
+
+    // Delete the job itself
+    await prisma.job.delete({
+      where: { id: jobId },
+    });
+
+    res.status(200).json({
+      message: "Job and associated applications deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};

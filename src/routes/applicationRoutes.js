@@ -19,7 +19,7 @@ const {
 const router = express.Router();
 
 router.post("/apply/:jobId", authenticateUser, applyForJob);
-router.post(
+router.get(
   "/applications/my-applications",
   authenticateUser,
   validateGetApplications,

@@ -258,3 +258,24 @@ exports.validateGetJobApplicationsForCompany = [
     next();
   },
 ];
+
+// Valaidation for signup//
+exports.validateDasPassword = [
+  body("oldPassword")
+    .isLength({ min: 8 })
+    .withMessage("Old Password must be at least 8 characters")
+    .matches(/\d/)
+    .withMessage("Old Password must contain a number"),
+  body("newPassword")
+    .isLength({ min: 8 })
+    .withMessage("New Password must be at least 8 characters")
+    .matches(/\d/)
+    .withMessage("New Password must contain a number"),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+    next();
+  },
+];

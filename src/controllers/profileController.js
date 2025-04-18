@@ -26,7 +26,7 @@ exports.setupProfile = async (req, res, next) => {
 
     // Check if the user already has a profile
     const existingProfile = await prisma[
-      role === "job_seeker" ? "jobSeeker" : "startupFounder"
+      role === "job_seeker" ? "jobSeeker" : "company"
     ].findUnique({
       where: { id: userId },
     });

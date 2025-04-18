@@ -31,8 +31,8 @@ model JobSeeker {
   id            String   @id @default(uuid()) @map("id") @unique
   user          User     @relation(fields: [id], references: [id])
   resumeUrl     String?
-  skills        String[]
-  interests     String[]
+  skills        Json?
+  interests     Json?
   fullName      String
   shortBio      String
 

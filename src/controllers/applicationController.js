@@ -367,7 +367,7 @@ exports.updateApplicationStatus = async (req, res, next) => {
 exports.getJobWithApplicants = async (req, res, next) => {
   try {
     const companyId = req.user.id; // assuming user.id is from the authenticated company
-    const { jobId } = req.params;
+    const jobId = req.params.jobid;
 
     // Check if the job belongs to this company
     const job = await prisma.job.findFirst({

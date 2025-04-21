@@ -85,7 +85,7 @@ exports.getJobApplicationsByJobSeeker = async (req, res, next) => {
         ...(title && {
           title: {
             contains: title,
-            mode: "insensitive", // for case-insensitive search
+            // mode: "insensitive", // for case-insensitive search
           },
         }),
       },
@@ -133,6 +133,9 @@ exports.getJobApplicationsByJobSeeker = async (req, res, next) => {
 exports.getJobsForJobSeeker = async (req, res, next) => {
   try {
     const jobSeekerId = req.user.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
     // Fetch job seeker data
     const jobSeeker = await prisma.jobSeeker.findUnique({
@@ -143,55 +146,72 @@ exports.getJobsForJobSeeker = async (req, res, next) => {
       return res.status(404).json({ message: "Job seeker not found" });
     }
 
-    const { skills, interests } = jobSeeker;
+    const { skills = [], interests = [] } = jobSeeker;
 
-    // Build the filter query for matching skills, interests, and job details
+    // Build the OR conditions dynamically
+    const skillFilters = skills.map((skill) => ({
+      skillsRequired: {
+        contains: skill,
+        // mode: "insensitive",
+      },
+    }));
+
+    const interestFilters = interests.flatMap((interest) => [
+      {
+        description: {
+          contains: interest,
+          // mode: "insensitive",
+        },
+      },
+      {
+        title: {
+          contains: interest,
+          // mode: "insensitive",
+        },
+      },
+    ]);
+
     const jobFilters = {
-      OR: [
-        // Match job skills with job seeker skills (match each skill individually)
-        {
-          skillsRequired: {
-            contains: skills[0], // Check if skillsRequired contains job seeker's first skill
-            mode: "insensitive",
-          },
-        },
-        ...(skills.length > 1
-          ? skills.slice(1).map((skill) => ({
-              skillsRequired: {
-                contains: skill, // Check if skillsRequired contains each additional skill
-                mode: "insensitive",
-              },
-            }))
-          : []), // If more skills exist, build a separate query for each
-        // Match job description with job seeker interests
-        {
-          description: {
-            contains: interests.join(" "), // Match description with job seeker's interests
-            mode: "insensitive",
-          },
-        },
-        // Match job title with job seeker interests
-        {
-          title: {
-            contains: interests.join(" "), // Match title with job seeker's interests
-            mode: "insensitive",
-          },
-        },
-      ],
+      OR: [...skillFilters, ...interestFilters],
     };
 
-    // Fetch matching jobs
-    const jobs = await prisma.job.findMany({
-      where: jobFilters,
-    });
+    const [jobs, total] = await Promise.all([
+      prisma.job.findMany({
+        where: jobFilters,
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          company: {
+            select: {
+              companyName: true,
+              industry: true,
+              website: true,
+              companyLogo: true,
+            },
+          },
+        },
+      }),
+      prisma.job.count({
+        where: jobFilters,
+      }),
+    ]);
 
     if (jobs.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No jobs found matching your interests or skills" });
+      return res.status(404).json({
+        message: "No jobs found matching your interests or skills",
+      });
     }
 
-    return res.json({ jobs });
+    return res.json({
+      total,
+      page,
+      pageSize: limit,
+      totalPages: Math.ceil(total / limit),
+      jobs,
+    });
   } catch (error) {
     next(error);
   }
@@ -213,6 +233,49 @@ exports.getJobByIdForJobSeeker = async (req, res, next) => {
           "You need to complete your job seeker profile to view this job.",
       });
     }
+
+    // Fetch the job by ID including company info
+    const job = await prisma.job.findUnique({
+      where: { id: jobId },
+      include: {
+        company: {
+          select: {
+            companyName: true,
+            industry: true,
+            website: true,
+            companyLogo: true,
+          },
+        },
+      },
+    });
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    // Check if the job seeker has applied to this job
+    const application = await prisma.jobApplication.findFirst({
+      where: {
+        jobId,
+        jobSeekerId,
+      },
+      select: {
+        status: true,
+      },
+    });
+
+    res.status(200).json({
+      job,
+      applicationStatus: application ? application.status : null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getJobByIdFor = async (req, res, next) => {
+  try {
+    const jobId = req.params.jobid;
 
     // Fetch the job by ID including company info
     const job = await prisma.job.findUnique({
@@ -263,6 +326,7 @@ exports.getAllJobApplicationsForCompany = async (req, res, next) => {
               select: {
                 id: true,
                 fullName: true,
+                email: true,
                 shortBio: true,
                 resumeUrl: true,
                 skills: true,

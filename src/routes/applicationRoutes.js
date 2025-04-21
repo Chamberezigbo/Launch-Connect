@@ -8,6 +8,7 @@ const {
   getJobsForJobSeeker,
   getJobWithApplicants,
   getJobByIdForJobSeeker,
+  getJobByIdFor,
 } = require("../controllers/applicationController");
 const { authenticateUser } = require("../middlewares/authMiddleware");
 
@@ -43,5 +44,8 @@ router.put(
 );
 
 router.get("/single-job/:jobid", authenticateUser, getJobWithApplicants);
+
+// Get a spacefic job for Landing Page:
+router.get("/single-job-for-landing/:jobid", getJobByIdFor);
 
 module.exports = router;

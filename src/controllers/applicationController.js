@@ -326,7 +326,6 @@ exports.getAllJobApplicationsForCompany = async (req, res, next) => {
               select: {
                 id: true,
                 fullName: true,
-                email: true,
                 shortBio: true,
                 resumeUrl: true,
                 skills: true,

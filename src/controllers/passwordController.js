@@ -169,10 +169,9 @@ exports.resendOtp = async (req, res, next) => {
     });
 
     // Generate reset link//
-    const resetLink = `${FRONTEND_URL}/reset-password?token=${otp}`;
-
-    //  Send reset password email//
-    const emailMessage = "Verify Your Email";
+    const resetLink = `Go and enter this OTP to reset your password: ${otp}`;
+    const emailMessage =
+      "Thank you for signing up on Lunch Connect! To complete your registration, please verify your email address.";
     const emailHTML = resetPasswordTemplate(
       user.email,
       resetLink,

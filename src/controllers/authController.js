@@ -40,10 +40,9 @@ exports.signupUser = async (req, res, next) => {
     });
 
     // Generate reset link//
-    const resetLink = `${FRONTEND_URL}/verify-email?otp=${otp}`;
-
-    //  Send reset password email//
-    const emailMessage = "Verify Your Email";
+    const resetLink = `Go to your dashboard and enter this OTP to verify your email: ${otp}`;
+    const emailMessage =
+      "Thank you for signing up on Lunch Connect! To complete your registration, please verify your email address.";
     const emailHTML = verifyEmailTemplate(
       user.email,
       resetLink,
@@ -125,13 +124,12 @@ exports.resendOtp = async (req, res, next) => {
     });
 
     // Generate reset link//
-    const resetLink = `${FRONTEND_URL}/verify-email?otp=${otp}`;
-
-    //  Send reset password email//
-    const emailMessage = "Verify Your Email";
+    const verifyLink = `Go to your dashboard and enter this OTP to verify your email: ${otp}`;
+    const emailMessage =
+      "Thank you for signing up on Lunch Connect! To complete your registration, please verify your email address.";
     const emailHTML = verifyEmailTemplate(
       user.email,
-      resetLink,
+      verifyLink,
       emailMessage,
       expiry
     );
@@ -169,8 +167,9 @@ exports.loginUser = async (req, res, next) => {
       });
 
       // Send new OTP email
-      const verifyLink = `${process.env.FRONTEND_URL}/verify-email?otp=${otp}`;
-      const emailMessage = "Verify Your Email";
+      const verifyLink = `Go to your dashboard and enter this OTP to verify your email: ${otp}`;
+      const emailMessage =
+        "Thank you for signing up on Lunch Connect! To complete your registration, please verify your email address.";
       const emailHTML = verifyEmailTemplate(
         user.email,
         verifyLink,

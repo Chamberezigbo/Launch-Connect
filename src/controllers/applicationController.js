@@ -330,6 +330,11 @@ exports.getAllJobApplicationsForCompany = async (req, res, next) => {
                 resumeUrl: true,
                 skills: true,
                 interests: true,
+                user: {
+                  select: {
+                    email: true, // <-- Get email from linked User
+                  },
+                },
               },
             },
           },

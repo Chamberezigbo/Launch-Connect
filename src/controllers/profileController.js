@@ -133,8 +133,7 @@ exports.upupdateJobSeekerProfile = async (req, res, next) => {
       data: updatedProfile,
     });
   } catch (error) {
-    console.error("Update error:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    next(error);
   }
 };
 

@@ -117,9 +117,8 @@ exports.upupdateJobSeekerProfile = async (req, res, next) => {
             (error, result) => (error ? reject(error) : resolve(result))
           )
           .end(req.file.buffer);
-
-        updateData.resumeUrl = uploadResult.secure_url;
       });
+      updateData.resumeUrl = uploadResult.secure_url;
     }
 
     // Update profile
